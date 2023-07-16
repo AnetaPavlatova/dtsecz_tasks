@@ -7,7 +7,7 @@ import pandas as pd
 
 #for graphs
 import matplotlib.pyplot as plt
-
+import seaborn
 
 
 
@@ -60,17 +60,11 @@ last_week_data = data[data['date'] > week_ago]
 weekly_cases_per_locations = last_week_data.groupby('location')['new_cases'].sum()
 
 population_per_locality = pd.merge(data[['location', 'population']].drop_duplicates(), weekly_cases_per_locations, on='location')
-
-
 population_per_locality_per_100k =population_per_locality['new_cases'] * 100000 / population_per_locality['population'];
 
 
-
-for i in range(0, len(population_per_locality['location'])+1):
+for i in range(0, len(population_per_locality['location'])):
    print(f"Average new cases for last 7 days in {population_per_locality['location'].values[i] } per 100k : {population_per_locality_per_100k.values[i]} ")
-
-
-
 
 
 population_per_locality['AvgNewCasesPer100k'] = population_per_locality['new_cases'] * 100000 / population_per_locality['population'];
@@ -95,3 +89,17 @@ ax[1].tick_params(axis='x', rotation=90)
 plt.tight_layout()
 plt.show()
 
+
+## Show scatter plot showing relation between population and average new cases in seven days.
+# Here we are interested in 20 states with most average new cases in a week.
+# The scatter plot should contain the names/abbreviations of selected countries.
+
+weekly_cases_per_locations_avg = last_week_data.groupby('location')['new_cases'].mean()
+population_per_locality['week_average'] = weekly_cases_per_locations_avg.values
+avg_top20 = population_per_locality.sort_values('week_average', ascending=False).head(20)
+
+
+
+g = seaborn.JointGrid(data=avg_top20, x='population', y='week_average')
+g.plot_joint(seaborn.scatterplot, legend=False)
+plt.show()
